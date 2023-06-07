@@ -8,7 +8,7 @@
 #include "esp_attr.h"
 #include "esp_camera.h"
 
-extern camera_config_t cam_config;
+extern camera_config_t camera_config;
 
 class OV2640
 {
@@ -37,7 +37,7 @@ private:
 
     // camera_framesize_t _frame_size;
     // camera_pixelformat_t _pixel_format;
-    camera_config_t _cam_config;
+    camera_config_t _camera_config;
 
     camera_fb_t *fb;
 

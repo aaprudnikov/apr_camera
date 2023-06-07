@@ -8,6 +8,10 @@
         "array": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "unordered_map": "cpp",
+        "fstream": "cpp",
+        "sstream": "cpp",
+        "typeinfo": "cpp"
     }
 }

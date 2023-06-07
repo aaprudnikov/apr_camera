@@ -1,23 +1,32 @@
 #ifndef MYWIFI_H
 #define MYWIFI_H
 
-enum WifiMode {
-    WIFI_APOINT_MODE,
-    WIFI_CLIENT_MODE,
-    WIFI_OFFLINE_MODE
+
+enum RetryStatus {
+    RETRY_NOT_NEEDED,
+    RETRY_OK,
+    RETRY_FAIL,
+    RETRY_NO_NETWORKS
 };
+
 
 class myWiFi {
     private:
-        WifiMode m_mode; 
+//        WifiMode m_mode;
+        RetryStatus m_state;
     public:
         myWiFi();
         void APServer();
-        void clientMode();
         bool tryConnectToWiFi(const char* ssid, const char* pass);
         void offline();
-        WifiMode getMode();
-        void checkNetwork();
+
+//        WifiMode getMode();
+//        void setMode(WifiMode mode);
+        RetryStatus establishingWiFiConnection();
+        uint8_t scanNetCountInRange();
+        uint8_t getNetCountInRange();
+        String getSsidInRange(int id);
+        RetryStatus getState();
 };
 
 #endif

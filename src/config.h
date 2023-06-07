@@ -18,11 +18,17 @@
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+#include "my_wifi.h"
+extern myWiFi my_wifi;
+
+#include "my_server.h"
+extern myServer my_server;
+
 #include "my_camera.h"
 extern OV2640 my_camera;
 
-#include "my_ntp.h"
-extern myNTP my_ntp;
+//#include "my_ntp.h"
+//extern myNTP my_ntp;
 
 #include "my_sdcard.h"
 extern mySDcard sd;
@@ -38,19 +44,34 @@ extern myLed led;
 #define LED 33
 
 #define NETWORK_FILE "/networks.cfg"
-#define WEB_CAPTURE_DIR "/capture_web"
-#define PIR_CAPTURE_DIR "/capture_pir"
-#define CAPTURE_DIR "/capture"
+//#define WEB_CAPTURE_DIR "/capture_web"
+//#define PIR_CAPTURE_DIR "/capture_pir"
+#define CAPTURE_DIR_PREFIX "/capture"
 
-#define VERSION "0.0.1"
+#define VERSION "0.2.1"
 
-#define CAPTURE_CNT_ADDR 0
-#define AUTO_CAPTURED_ADDR 2
+#define NVS_VOLUME 8
+#define CAPTURE_CNT_ADDR 0      // 2 bytes
+#define AUTO_CAPTURED_ADDR 2    // 1 byte
+#define SWITCHING_ON_CNT 3          // 2 bytes
+#define SWITCHING_ON_SUCC_CNT 5     // 2 bytes
+#define CAPTURE_DIR_POSTFIX_CNT 1     // 1 bytes
 
 #include "my_eeprom.h"
 extern myEeprom my_eeprom;
 
 #define PIR_PIN 16
 #define BUTTON_PIN 100
+
+#include "my_pir.h"
+extern myPIR my_pir;
+
+#include "my_ftp.h"
+extern myFTP my_ftp;
+#define FTP_USER "ftp"
+#define FTP_PASSWORD "ftp"
+
+#include "my_mqtt.h"
+extern myMQTT my_mqtt;
 
 #endif

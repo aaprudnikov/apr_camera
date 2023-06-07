@@ -8,11 +8,13 @@ enum PirMode {
 
 class myPIR{
     private:
-        PirMode m_mode;
+        PirMode m_mode = PIR_GUARD;
     public:
-        void run(PirMode mode);
-        void stop();
+//        void run(PirMode mode);
+//        void stop();
+        void handle();
         PirMode getState();
+        void setState(PirMode mode);
 };
 
 #endif

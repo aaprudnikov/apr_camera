@@ -1,3 +1,4 @@
+/*
 #include "my_ntp.h"
 #include <NTPClient.h>
 #include <WiFiUdp.h>
@@ -75,19 +76,10 @@ String myNTP::getDataTimeSplit() {
     char buff_current_data_time[32];
     unsigned long current_time;
 
-/*
-    if (!ntp_awailable) {
-        current_data_time = "20220101000000";
-    }
-    else {
-        current_time = timeClient.getEpochTime();
-        sprintf(buff_current_data_time, "%02d%02d%02d%02d%02d%02d", year(current_time), month(current_time), day(current_time), hour(current_time), minute(current_time), second(current_time));
-        current_data_time = String(buff_current_data_time);
-    }
-*/
         current_time = timeClient.getEpochTime();
         sprintf(buff_current_data_time, "%02d%02d%02d%02d%02d%02d", year(current_time), month(current_time), day(current_time), hour(current_time), minute(current_time), second(current_time));
         current_data_time = String(buff_current_data_time);
 
     return current_data_time;
 }
+*/

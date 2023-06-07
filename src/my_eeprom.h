@@ -10,6 +10,10 @@ class myEeprom {
         void writeCaptureCnt(uint16_t counter);
         uint8_t getAutoCaptureFlag();
         void writeAutoCaptureFlag(uint8_t flag);
+        uint16_t readUShort(int address);
+        uint8_t read(int address);
+        void writeUShort(int address, uint16_t value);
+        void write(int address, uint8_t value);
 };
 
 #endif

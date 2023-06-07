@@ -9,21 +9,48 @@ const char* dssid = "aprCamera";
 const char* dpassword = "!QAZ2wsx";
 uint8_t ap_client_count = 0;
 bool ap_active_client = false;
+String ssidInRange[32];
+uint8_t net_count_in_range = 0;
+//uint32_t retry_reconnect_tmr;
+uint8_t retry_reconnect_cnt = 0;
+myWiFi my_WiFi;
 
 // *******************************************************
 myWiFi::myWiFi() {
 }
 
-
 // *******************************************************
-void myWiFi::clientMode() {
+uint8_t myWiFi::scanNetCountInRange() {
     offline();
     WiFi.mode(WIFI_MODE_STA);
     delay(100);
     WiFi.persistent(false);
-    m_mode = WIFI_CLIENT_MODE;
+    net_count_in_range = WiFi.scanNetworks();
+
+    if (net_count_in_range != 0) {
+        for (int i = 0; i < net_count_in_range; ++i) {
+            ssidInRange[i] = WiFi.SSID(i);
+            debug_println3("my_wifi", "scanNetCountInRange", String(String(i) + ": " + String(ssidInRange[i])).c_str());
+        }
+    }
+    else {
+        debug_println3("my_wifi", "scanNetCountInRange", "no networks in range");
+//        setMode(WIFI_OFFLINE_MODE);
+    }
+    return net_count_in_range;
 }
 
+// *******************************************************
+uint8_t myWiFi::getNetCountInRange() {
+    debug_println3("my_wifi", "getNetCountInRange", String(net_count_in_range).c_str());
+    return net_count_in_range; 
+}
+
+// *******************************************************
+String myWiFi::getSsidInRange(int id) {
+    return ssidInRange[id];
+}
+/*
 // *******************************************************
 void WiFiClientConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     char connected_mac[18] = "";
@@ -57,7 +84,7 @@ void WiFiClientDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     led.flash(2);
     debug_println3("my_wifi", "WiFiClientDisconnected", String(disconnected_mac).c_str());
 }
-
+*/
 // *******************************************************
 void myWiFi::APServer() {
     offline();
@@ -66,40 +93,48 @@ void myWiFi::APServer() {
     delay(100);
     WiFi.persistent(false);
     WiFi.softAP(dssid, dpassword);
-    WiFi.onEvent(WiFiClientConnected, SYSTEM_EVENT_AP_STACONNECTED);
-    WiFi.onEvent(WiFiClientDisconnected, SYSTEM_EVENT_AP_STADISCONNECTED);
-    m_mode = WIFI_APOINT_MODE;
+//    WiFi.onEvent(WiFiClientConnected, SYSTEM_EVENT_AP_STACONNECTED);
+//    WiFi.onEvent(WiFiClientDisconnected, SYSTEM_EVENT_AP_STADISCONNECTED);
+//    setMode(WIFI_APOINT_MODE);
     debug_println3("my_wifi", "APServer", String(WiFi.softAPIP().toString()).c_str());
 }
 
 void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info){
     debug_println3("my_wifi", "WiFiStationConnected", "Ok");
+//    my_WiFi.setMode(WIFI_CLIENT_MODE);
+    retry_reconnect_cnt = 0;
 }
 
 void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
     debug_println3("my_wifi", "WiFiStationDisconnected", String("Trying to Reconnect").c_str());
     WiFi.disconnect();
     WiFi.reconnect();
+    retry_reconnect_cnt ++;
+    if (retry_reconnect_cnt > 10) {
+//        my_WiFi.setMode(WIFI_OFFLINE_MODE);
+    }
 }
-
 
 // *******************************************************
 bool myWiFi::tryConnectToWiFi(const char* ssid, const char* pass) {
+    bool m_state = false;
     WiFi.begin(ssid, pass);
     debug_println3("my_wifi", "tryConnectToWiFi", String("ssid: " + String(ssid) + " pass: " + String(pass)).c_str());
 
     uint32_t try_to_connect_tmr = millis();
 
-    while (millis() - try_to_connect_tmr < 30000) {
+    while (millis() - try_to_connect_tmr < 30000 || !m_state) {
         if (WiFi.status() == WL_CONNECTED) {
             Serial.print("\n");
             WiFi.setAutoConnect(true);
             WiFi.persistent(true);
-            WiFi.onEvent(WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED);
-            WiFi.onEvent(WiFiStationDisconnected, SYSTEM_EVENT_STA_DISCONNECTED);
+//            WiFi.onEvent(WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED);
+//            WiFi.onEvent(WiFiStationDisconnected, SYSTEM_EVENT_STA_DISCONNECTED);
+//            setMode(WIFI_CLIENT_MODE);
             debug_println3("my_wifi", "tryConnectToWiFi", String(WiFi.localIP().toString()).c_str());
             debug_println3("my_wifi", "tryConnectToWiFi", String(WiFi.macAddress()).c_str());
-            return true;
+            m_state = true;
+            break;
         }
         Serial.print(" . ");
         led.flash(1);
@@ -108,8 +143,10 @@ bool myWiFi::tryConnectToWiFi(const char* ssid, const char* pass) {
 
     if (WiFi.status() != WL_CONNECTED) {
         debug_println3("my_wifi", "tryConnectToWiFi", "false");
-        return false;
+        m_state = false;
     }
+
+    return m_state;
 }
 
 // *******************************************************
@@ -118,40 +155,46 @@ void myWiFi::offline() {
     delay(100);
     WiFi.mode(WIFI_OFF);
     delay(100);
-    m_mode = WIFI_OFFLINE_MODE;
+//    setMode(WIFI_OFFLINE_MODE);
+//    retry_reconnect_tmr = millis();
+    debug_println2("my_wifi", "offline");
 }
 
+/*
 // *******************************************************
 WifiMode myWiFi::getMode() {
     return m_mode;
 }
 
-/*
 // *******************************************************
-void myWiFi::checkNetwork() {
-    if (millis() - check_network_tmr < 20000) {
-        return;
-    }
-
-    check_network_tmr = millis();
-    
-    if (WiFi.status() == WL_CONNECTED) {
-        return true;
-    }
-    
-    change_preferably_network = true;
-    
-    WiFi.disconnect();
-    
-    if (tryConnectToWiFi(global_ssid, global_pass)) {
-        net_offline_mode = false;
-        change_preferably_network = false;
-        return true;
-    }
-    else {
-        Serial.println("testWifi. Error: connection timed out");
-        WiFi.disconnect();
-        return false;
-    }
+void myWiFi::setMode(WifiMode mode) {
+    m_mode = mode;
 }
 */
+
+// *******************************************************
+RetryStatus myWiFi::establishingWiFiConnection() {
+    if (WiFi.status() != WL_CONNECTED) {
+        debug_println3("my_wifi", "establishingWiFiConnection", "Start");
+//        retry_reconnect_tmr = millis();
+        if (scanNetCountInRange() != 0) {
+            if (sd.checkKnownNetworks()) {
+                m_state = RETRY_OK;
+            }
+            else {
+                m_state = RETRY_FAIL;
+            }
+        }
+        else {
+            m_state = RETRY_NO_NETWORKS;
+        }
+    }
+    else {
+        m_state = RETRY_NOT_NEEDED;
+    }
+    return m_state;
+}
+
+RetryStatus myWiFi:: getState() {
+    return m_state;
+};
